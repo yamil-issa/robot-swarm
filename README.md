@@ -19,8 +19,8 @@ This project implements a **swarm of autonomous robots** for **space exploration
 ### Steps
 1. Clone the repository:
    ```
-   git clone <repo_url>
-   cd exploration_project
+   git clone https://github.com/yamil-issa/robot-swarm.git
+   cd robot-swarm
 
    ```
 2. Build The Project :
