@@ -1,7 +1,12 @@
 mod map;
+mod robot;
+
 use map::Map;
-use rand::Rng;
+use rand::{Rng, SeedableRng};
+use robot::{initialize_robots, Robot};
 use std::env;
+use std::thread::sleep;
+use std::time::Duration;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -16,7 +21,16 @@ fn main() {
     let seed = rand::thread_rng().gen_range(0..10000);
     let map = Map::new(seed, width, height);
     
-    println!("Map generated with seed: {}", seed);
-    println!("Size: {} x {}", width, height);
-    map.display();
+    let count = 3;
+    let mut rng = rand::rngs::StdRng::seed_from_u64(seed as u64);
+    let mut robots = initialize_robots(count, width, height, seed);
+
+    println!("\nStarting simulation...\n");
+    for _ in 0..10 {
+        sleep(Duration::from_millis(500));
+        for robot in &mut robots {
+            robot.move_robot(&map, &mut rng);
+        }
+        map.display_with_robots(&robots);
+    }
 }
