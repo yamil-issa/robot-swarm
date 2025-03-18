@@ -21,31 +21,16 @@ fn main() {
     let seed = rand::thread_rng().gen_range(0..10000);
     let map = Map::new(seed, width, height);
     
-    println!("Map generated with seed: {}", seed);
-    println!("Size: {} x {}", width, height);
-    map.display();
-
-    // Initialize robots
     let count = 3;
     let mut rng = rand::rngs::StdRng::seed_from_u64(seed as u64);
     let mut robots = initialize_robots(count, width, height, seed);
 
-    println!("\nRobots initialized:");
-    for robot in &robots {
-        robot.display_info();
-    }
-
-    // Main loop
-    println!("\nStarting robot movement simulation...\n");
-    for _ in 0..5 {
-        sleep(Duration::from_secs(1));
+    println!("\nStarting simulation...\n");
+    for _ in 0..10 {
+        sleep(Duration::from_millis(500));
         for robot in &mut robots {
             robot.move_robot(&map, &mut rng);
         }
-
-        println!("\nUpdated Robot Positions:");
-        for robot in &robots {
-            robot.display_info();
-        }
+        map.display_with_robots(&robots);
     }
 }
