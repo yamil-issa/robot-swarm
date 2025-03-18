@@ -1,7 +1,6 @@
 use noise::{NoiseFn, Perlin};
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
-use std::env;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Tile {

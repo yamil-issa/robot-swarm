@@ -1,6 +1,8 @@
 mod map;
+mod robot;
 use map::Map;
 use rand::Rng;
+use robot::initialize_robots;
 use std::env;
 
 fn main() {
@@ -19,4 +21,12 @@ fn main() {
     println!("Map generated with seed: {}", seed);
     println!("Size: {} x {}", width, height);
     map.display();
+
+    // Initialize robots
+    let count = 3;
+    let robots = initialize_robots(count, width, height, seed);
+    println!("\nRobots initialized:");
+    for robot in &robots {
+        robot.display_info();
+    }
 }
