@@ -23,6 +23,7 @@ The project requires a structured approach to manage map generation, robots, and
 
 ### Model and DTO Impact
 - Addition of `Tile` enum for different terrain types
+- Addition of resources: `Energy`, `Mineral`, `Scientific`
 - Possible extension for handling resource collection
 
 ### API Impact
@@ -31,18 +32,21 @@ The project requires a structured approach to manage map generation, robots, and
 ### General Configuration Impact
 - Map generation is based on a **Perlin Noise** function for obstacles
 - Uses a **random seed** to ensure reproducibility
+- Map size is configurable via CLI arguments `cargo run width height`
 
 ### DevOps Impact
 - No significant impact at this stage, as the project is in early development
 
 ## Considerations
 - Alternative approaches like cellular automata for terrain generation were considered but discarded in favor of Perlin Noise for smoother transitions.
-- Future extensibility into an ECS-based architecture (Bevy) was considered but postponed.
+- Random resource placement was chosen with a 5% probability per resource type per tile.
 
 ## Decision
 - Use **Perlin Noise** for procedural map generation
 - Structure the project into **modular Rust files** (`map.rs`, `robot.rs`, `station.rs`)
 - Render the map in **ASCII format** for simplicity
+- Add energy, mineral, and scientific resources to the map
+- Enable CLI-configurable map size
 
 ## Other Related ADRs
 - [ADR-002: Procedural Map Generation with Perlin Noise](URL) - Defines how the map is generated
@@ -51,3 +55,4 @@ The project requires a structured approach to manage map generation, robots, and
 ## References
 - [Noise Crate](https://docs.rs/noise/latest/noise/) - Used for Perlin Noise generation
 - [Rust Modules](https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html) - Rust module system documentation
+- [Rust CLI Arguments](https://doc.rust-lang.org/book/ch12-01-accepting-command-line-arguments.html) - Handling command-line arguments in Rust
