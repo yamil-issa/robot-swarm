@@ -1,6 +1,6 @@
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
-use crate::map::{Map, Tile};
+use crate::map::Map;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RobotType {
@@ -11,22 +11,15 @@ pub enum RobotType {
 
 #[derive(Debug)]
 pub struct Robot {
-    pub id: usize,
     pub x: usize,
     pub y: usize,
     pub robot_type: RobotType,
 }
 
 impl Robot {
-    pub fn new(id: usize, width: usize, height: usize, rng: &mut StdRng) -> Self {
-        let mut x;
-        let mut y;
-
-        loop {
-            x = rng.gen_range(0..width);
-            y = rng.gen_range(0..height);
-            break;
-        }
+    pub fn new(width: usize, height: usize, rng: &mut StdRng) -> Self {
+        let x = rng.gen_range(0..width);
+        let y = rng.gen_range(0..height);
 
         let robot_type = match rng.gen_range(0..3) {
             0 => RobotType::Explorer,
@@ -34,13 +27,13 @@ impl Robot {
             _ => RobotType::Scientist,
         };
 
-        Self { id, x, y, robot_type }
+        Self { x, y, robot_type }
     }
 
     pub fn display_info(&self) {
         println!(
-            "Robot {} ({:?}) -> Position: ({}, {})",
-            self.id, self.robot_type, self.x, self.y
+            "Robot ({:?}) -> Position: ({}, {})",
+            self.robot_type, self.x, self.y
         );
     }
 
@@ -52,7 +45,7 @@ impl Robot {
             let new_x = (self.x as isize + dx).max(0).min((map.width - 1) as isize) as usize;
             let new_y = (self.y as isize + dy).max(0).min((map.height - 1) as isize) as usize;
 
-            if map.grid[new_y][new_x] != Tile::Obstacle {
+            if map.grid[new_y][new_x] != crate::map::Tile::Obstacle {
                 self.x = new_x;
                 self.y = new_y;
                 break;
@@ -63,5 +56,5 @@ impl Robot {
 
 pub fn initialize_robots(count: usize, width: usize, height: usize, seed: u32) -> Vec<Robot> {
     let mut rng = StdRng::seed_from_u64(seed as u64);
-    (0..count).map(|i| Robot::new(i, width, height, &mut rng)).collect()
+    (0..count).map(|_| Robot::new(width, height, &mut rng)).collect()
 }

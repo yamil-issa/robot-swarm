@@ -1,6 +1,13 @@
 use noise::{NoiseFn, Perlin};
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use crossterm::{
+    execute,
+    terminal::{Clear, ClearType},
+    cursor::{MoveTo, Hide},
+    style::{Print, SetForegroundColor, Color},
+};
+use std::io::{stdout, Write};
 use crate::robot::Robot;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -28,16 +35,15 @@ impl Map {
             for x in 0..width {
                 let noise_value = perlin.get([x as f64 / 5.0, y as f64 / 5.0]);
 
-                if noise_value > 0.3 {
+                if noise_value > 0.6 {
                     grid[y][x] = Tile::Obstacle;
                 } else {
-                    // 5% chance for each resource type
                     let resource_chance: f64 = rng.gen();
-                    if resource_chance < 0.05 {
+                    if resource_chance < 0.03 {
                         grid[y][x] = Tile::Energy;
-                    } else if resource_chance < 0.10 {
+                    } else if resource_chance < 0.06 {
                         grid[y][x] = Tile::Mineral;
-                    } else if resource_chance < 0.15 {
+                    } else if resource_chance < 0.09 {
                         grid[y][x] = Tile::Scientific;
                     }
                 }
@@ -47,33 +53,40 @@ impl Map {
         Self { grid, width, height }
     }
 
-    pub fn display_with_robots(&self, robots: &[Robot]) {
-        print!("\x1B[2J\x1B[1;1H");
-    
-        let mut display_grid: Vec<Vec<char>> = self.grid.iter()
-            .map(|row| row.iter().map(|&tile| match tile {
-                Tile::Empty => '.',
-                Tile::Obstacle => '#',
-                Tile::Energy => '⚡',
-                Tile::Mineral => '⛏',
-                Tile::Scientific => '🔬',
-            }).collect())
-            .collect();
-    
+    pub fn display_map(&self, robots: &[Robot]) {
+        let mut stdout = stdout();
+        execute!(stdout, Clear(ClearType::All)).unwrap();
+
+        for (y, row) in self.grid.iter().enumerate() {
+            for (x, &tile) in row.iter().enumerate() {
+                let (symbol, color) = match tile {
+                    Tile::Empty => ('.', Color::White),
+                    Tile::Obstacle => ('#', Color::DarkGrey),
+                    Tile::Energy => ('⚡', Color::Yellow),
+                    Tile::Mineral => ('⛏', Color::Green),
+                    Tile::Scientific => ('🔬', Color::Cyan),
+                };
+
+                execute!(stdout, MoveTo(x as u16 * 2, y as u16), SetForegroundColor(color), Print(symbol)).unwrap();
+            }
+        }
+
         for robot in robots {
             let symbol = match robot.robot_type {
-                crate::robot::RobotType::Explorer => 'E',  // Explorer
-                crate::robot::RobotType::Miner => 'M',     // Miner
-                crate::robot::RobotType::Scientist => 'S', // Scientist
+                crate::robot::RobotType::Explorer => 'E',
+                crate::robot::RobotType::Miner => 'M',
+                crate::robot::RobotType::Scientist => 'S',
             };
-            display_grid[robot.y][robot.x] = symbol;
+
+            execute!(
+                stdout,
+                MoveTo(robot.x as u16 * 2, robot.y as u16),
+                SetForegroundColor(Color::Blue),
+                Print(symbol)
+            )
+            .unwrap();
         }
-    
-        for row in display_grid.iter() {
-            for &tile in row {
-                print!("{} ", tile);
-            }
-            println!();
-        }
-    }    
+
+        stdout.flush().unwrap();
+    }
 }
