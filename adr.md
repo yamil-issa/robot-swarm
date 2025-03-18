@@ -6,6 +6,7 @@
 ## Change Log
 - [Approved](https://github.com/yamil-issa/robot-swarm/pull/1) 2025-03-18
 - [Approved](https://github.com/yamil-issa/robot-swarm/pull/2) 2025-03-18
+- [Approved](https://github.com/yamil-issa/robot-swarm/pull/3) 2025-03-18
 
 ## Referenced Use Case(s)
 - [Use Case Name](URL)
@@ -22,6 +23,7 @@ The project requires a structured approach to manage map generation, robots, and
 ### New Services/Modules Added
 - Dynamic ASCII rendering in `map.rs`
 - `robot.rs`: Manages robot logic and movement
+- use `Crossterm` to render the map in `map.rs`
 - `station.rs` (future module for the station management)
 
 ### Model and DTO Impact
@@ -60,7 +62,6 @@ The project requires a structured approach to manage map generation, robots, and
 - Random resource placement was chosen with a 5% probability per resource type per tile.
 - Future work could implement pathfinding (A or Dijkstra)* for smarter movement.
 - Each robot moves one step at a time, but we may introduce different movement behaviors per robot type.
-- Consideration for graphical rendering with crossterm or Bevy in the future.
 
 ## Decision
 - Use **Perlin Noise** for procedural map generation
@@ -74,8 +75,12 @@ The project requires a structured approach to manage map generation, robots, and
 - Store robots in a Vec<Robot> for tracking movements
 - Implement real-time map updates with robot positions
 - Clear terminal between frames to simulate fluid motion
+- Use Crossterm for rendering the map and robot movements in the terminal
+- Hide the cursor during simulation and restore it at the end
+- Ensure the last frame remains visible by repositioning the cursor correctly and enforcing a short delay before program exit
 
 ## References
 - [Noise Crate](https://docs.rs/noise/latest/noise/) - Used for Perlin Noise generation
 - [Rust Modules](https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html) - Rust module system documentation
 - [Rust CLI Arguments](https://doc.rust-lang.org/book/ch12-01-accepting-command-line-arguments.html) - Handling command-line arguments in Rust
+- [Crossterm](https://docs.rs/crossterm/latest/crossterm)- Library used for terminal-based graphical rendering
