@@ -12,9 +12,9 @@ pub enum Tile {
 }
 
 pub struct Map {
-    grid: Vec<Vec<Tile>>,
-    width: usize,
-    height: usize,
+    pub grid: Vec<Vec<Tile>>,
+    pub width: usize,
+    pub height: usize,
 }
 
 impl Map {

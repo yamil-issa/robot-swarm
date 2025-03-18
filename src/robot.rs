@@ -1,5 +1,6 @@
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use crate::map::{Map, Tile};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RobotType {
@@ -18,8 +19,15 @@ pub struct Robot {
 
 impl Robot {
     pub fn new(id: usize, width: usize, height: usize, rng: &mut StdRng) -> Self {
-        let x = rng.gen_range(0..width);
-        let y = rng.gen_range(0..height);
+        let mut x;
+        let mut y;
+
+        loop {
+            x = rng.gen_range(0..width);
+            y = rng.gen_range(0..height);
+            break;
+        }
+
         let robot_type = match rng.gen_range(0..3) {
             0 => RobotType::Explorer,
             1 => RobotType::Miner,
@@ -34,6 +42,22 @@ impl Robot {
             "Robot {} ({:?}) -> Position: ({}, {})",
             self.id, self.robot_type, self.x, self.y
         );
+    }
+
+    pub fn move_robot(&mut self, map: &Map, rng: &mut StdRng) {
+        let directions = [(0, -1), (0, 1), (-1, 0), (1, 0)];
+
+        for _ in 0..4 {
+            let (dx, dy) = directions[rng.gen_range(0..4)];
+            let new_x = (self.x as isize + dx).max(0).min((map.width - 1) as isize) as usize;
+            let new_y = (self.y as isize + dy).max(0).min((map.height - 1) as isize) as usize;
+
+            if map.grid[new_y][new_x] != Tile::Obstacle {
+                self.x = new_x;
+                self.y = new_y;
+                break;
+            }
+        }
     }
 }
 

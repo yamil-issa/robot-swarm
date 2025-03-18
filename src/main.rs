@@ -1,9 +1,12 @@
 mod map;
 mod robot;
+
 use map::Map;
-use rand::Rng;
-use robot::initialize_robots;
+use rand::{Rng, SeedableRng};
+use robot::{initialize_robots, Robot};
 use std::env;
+use std::thread::sleep;
+use std::time::Duration;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,9 +27,25 @@ fn main() {
 
     // Initialize robots
     let count = 3;
-    let robots = initialize_robots(count, width, height, seed);
+    let mut rng = rand::rngs::StdRng::seed_from_u64(seed as u64);
+    let mut robots = initialize_robots(count, width, height, seed);
+
     println!("\nRobots initialized:");
     for robot in &robots {
         robot.display_info();
+    }
+
+    // Main loop
+    println!("\nStarting robot movement simulation...\n");
+    for _ in 0..5 {
+        sleep(Duration::from_secs(1));
+        for robot in &mut robots {
+            robot.move_robot(&map, &mut rng);
+        }
+
+        println!("\nUpdated Robot Positions:");
+        for robot in &robots {
+            robot.display_info();
+        }
     }
 }
