@@ -4,7 +4,8 @@
 - Yamil ISSA
 
 ## Change Log
-- [Approved](URL of pull request) 2025-03-18
+- [Approved](https://github.com/yamil-issa/robot-swarm/pull/1) 2025-03-18
+- [Approved](https://github.com/yamil-issa/robot-swarm/pull/2) 2025-03-18
 
 ## Referenced Use Case(s)
 - [Use Case Name](URL)
