@@ -14,7 +14,7 @@ pub struct Robot {
     pub x: usize,
     pub y: usize,
     pub robot_type: RobotType,
-    pub discoveries: Vec<(usize, usize, Tile)>, // Stocke les découvertes
+    pub discoveries: Vec<(usize, usize, Tile)>,
 }
 
 impl Robot {
@@ -62,21 +62,18 @@ impl Robot {
     pub fn perform_action(&mut self, map: &mut Map) {
         match self.robot_type {
             RobotType::Explorer => {
-                // Explorer enregistre tous types de ressources découvertes
                 let tile = map.grid[self.y][self.x];
                 if tile != Tile::Empty && tile != Tile::Obstacle {
                     self.discoveries.push((self.x, self.y, tile));
                 }
             }
             RobotType::Miner => {
-                // Miner collecte uniquement les minerais
                 if map.grid[self.y][self.x] == Tile::Mineral {
                     self.discoveries.push((self.x, self.y, Tile::Mineral));
-                    map.grid[self.y][self.x] = Tile::Empty; // Ressource consommée
+                    map.grid[self.y][self.x] = Tile::Empty;
                 }
             }
             RobotType::Scientist => {
-                // Scientifique enregistre uniquement les lieux d'intérêt scientifique
                 if map.grid[self.y][self.x] == Tile::Scientific {
                     self.discoveries.push((self.x, self.y, Tile::Scientific));
                 }
