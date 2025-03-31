@@ -36,7 +36,7 @@ fn main() {
 
     println!("\nStarting simulation...\n");
 
-    for _ in 0..10 {
+    loop {
         sleep(Duration::from_millis(400));
 
         let mut handles = vec![];
@@ -64,6 +64,10 @@ fn main() {
         let map_final = map.lock().unwrap();
         let robots_final = robots.lock().unwrap();
         map_final.display_map(&robots_final);
+
+        if robots_final.iter().all(|robot| robot.energy == 0) {
+            break;
+        }
     }
 
     execute!(stdout, MoveTo(0, height as u16 + 2), Print("\nsimulation completed."), Show).unwrap();
