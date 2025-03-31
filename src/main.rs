@@ -5,6 +5,8 @@ use map::Map;
 use rand::{Rng, SeedableRng};
 use robot::initialize_robots;
 use std::env;
+use std::sync::{Arc, Mutex};
+use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
 use crossterm::{
@@ -24,11 +26,10 @@ fn main() {
     let height = args.get(2).and_then(|h| h.parse().ok()).unwrap_or(default_height);
 
     let seed = rand::thread_rng().gen_range(0..10000);
-    let mut map = Map::new(seed, width, height);
+    let map = Arc::new(Mutex::new(Map::new(seed, width, height)));
 
     let count = 3;
-    let mut rng = rand::rngs::StdRng::seed_from_u64(seed as u64);
-    let mut robots = initialize_robots(count, width, height, seed);
+    let robots = Arc::new(Mutex::new(initialize_robots(count, width, height, seed)));
 
     let mut stdout = stdout();
     execute!(stdout, Hide, Clear(ClearType::All)).unwrap();
@@ -37,14 +38,45 @@ fn main() {
 
     for _ in 0..10 {
         sleep(Duration::from_millis(400));
-        for robot in &mut robots {
-            robot.move_robot(&map, &mut rng);
+
+        let mut handles = vec![];
+
+        for i in 0..count {
+            let map_clone = Arc::clone(&map);
+            let robots_clone = Arc::clone(&robots);
+
+            let handle = thread::spawn(move || {
+                let mut rng = rand::rngs::StdRng::from_entropy();
+                let mut robots_lock = robots_clone.lock().unwrap();
+                let robot = &mut robots_lock[i];
+
+                robot.move_robot(&map_clone.lock().unwrap(), &mut rng);
+                robot.perform_action(&mut map_clone.lock().unwrap());
+            });
+
+            handles.push(handle);
         }
-        map.display_map(&robots);
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+
+        let map_final = map.lock().unwrap();
+        let robots_final = robots.lock().unwrap();
+        map_final.display_map(&robots_final);
     }
 
     execute!(stdout, MoveTo(0, height as u16 + 2), Print("\nsimulation completed."), Show).unwrap();
-    
+
+    println!("\nRobots' discoveries:");
+    let robots_final = robots.lock().unwrap();
+    for (i, robot) in robots_final.iter().enumerate() {
+        println!("Robot {} ({:?}) discoveries:", i + 1, robot.robot_type);
+        for (x, y, tile) in &robot.discoveries {
+            println!("  - Position: ({}, {}), Resource: {:?}", x, y, tile);
+        }
+    }
+
     stdout.flush().unwrap();
 
     sleep(Duration::from_secs(2));
