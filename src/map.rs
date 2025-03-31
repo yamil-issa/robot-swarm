@@ -10,13 +10,14 @@ use crossterm::{
 use std::io::{stdout, Write};
 use crate::robot::Robot;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Tile {
     Empty,
     Obstacle,
     Energy,      // ⚡ Energy Resource
     Mineral,     // ⛏️ Mineral Resource
     Scientific,  // 🔬 Scientific Point of Interest
+    Station,    // 📡 Station
 }
 
 pub struct Map {
@@ -65,6 +66,7 @@ impl Map {
                     Tile::Energy => ('⚡', Color::Yellow),
                     Tile::Mineral => ('⛏', Color::Green),
                     Tile::Scientific => ('🔬', Color::Cyan),
+                    Tile::Station => ('📡', Color::Magenta),
                 };
 
                 execute!(stdout, MoveTo(x as u16 * 2, y as u16), SetForegroundColor(color), Print(symbol)).unwrap();
@@ -72,6 +74,10 @@ impl Map {
         }
 
         for robot in robots {
+            if self.grid[robot.y][robot.x] == Tile::Station {
+                continue;
+            }
+
             let symbol = match robot.robot_type {
                 crate::robot::RobotType::Explorer => 'E',
                 crate::robot::RobotType::Miner => 'M',
