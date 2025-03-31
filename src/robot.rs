@@ -1,6 +1,6 @@
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
-use crate::map::Map;
+use crate::map::{Map, Tile};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RobotType {
@@ -14,6 +14,7 @@ pub struct Robot {
     pub x: usize,
     pub y: usize,
     pub robot_type: RobotType,
+    pub discoveries: Vec<(usize, usize, Tile)>, // Stocke les découvertes
 }
 
 impl Robot {
@@ -27,7 +28,12 @@ impl Robot {
             _ => RobotType::Scientist,
         };
 
-        Self { x, y, robot_type }
+        Self {
+            x,
+            y,
+            robot_type,
+            discoveries: Vec::new(),
+        }
     }
 
     pub fn display_info(&self) {
@@ -45,10 +51,35 @@ impl Robot {
             let new_x = (self.x as isize + dx).max(0).min((map.width - 1) as isize) as usize;
             let new_y = (self.y as isize + dy).max(0).min((map.height - 1) as isize) as usize;
 
-            if map.grid[new_y][new_x] != crate::map::Tile::Obstacle {
+            if map.grid[new_y][new_x] != Tile::Obstacle {
                 self.x = new_x;
                 self.y = new_y;
                 break;
+            }
+        }
+    }
+
+    pub fn perform_action(&mut self, map: &mut Map) {
+        match self.robot_type {
+            RobotType::Explorer => {
+                // Explorer enregistre tous types de ressources découvertes
+                let tile = map.grid[self.y][self.x];
+                if tile != Tile::Empty && tile != Tile::Obstacle {
+                    self.discoveries.push((self.x, self.y, tile));
+                }
+            }
+            RobotType::Miner => {
+                // Miner collecte uniquement les minerais
+                if map.grid[self.y][self.x] == Tile::Mineral {
+                    self.discoveries.push((self.x, self.y, Tile::Mineral));
+                    map.grid[self.y][self.x] = Tile::Empty; // Ressource consommée
+                }
+            }
+            RobotType::Scientist => {
+                // Scientifique enregistre uniquement les lieux d'intérêt scientifique
+                if map.grid[self.y][self.x] == Tile::Scientific {
+                    self.discoveries.push((self.x, self.y, Tile::Scientific));
+                }
             }
         }
     }
