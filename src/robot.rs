@@ -16,6 +16,7 @@ pub struct Robot {
     pub robot_type: RobotType,
     pub discoveries: Vec<(usize, usize, Tile)>,
     pub energy: usize,
+    pub returning: bool,
 }
 
 impl Robot {
@@ -35,6 +36,7 @@ impl Robot {
             robot_type,
             discoveries: Vec::new(),
             energy: 10,
+            returning: false,
         }
     }
 
@@ -44,6 +46,41 @@ impl Robot {
             self.robot_type, self.x, self.y
         );
     }
+
+    pub fn return_to_station(&mut self, station_x: usize, station_y: usize, map: &Map) -> bool {
+        if self.x == station_x && self.y == station_y {
+            return true;
+        }
+    
+        let dx = (station_x as isize - self.x as isize).signum();
+        let dy = (station_y as isize - self.y as isize).signum();
+    
+        let new_x = (self.x as isize + dx).max(0).min((map.width - 1) as isize) as usize;
+        let new_y = (self.y as isize + dy).max(0).min((map.height - 1) as isize) as usize;
+    
+        if map.grid[new_y][new_x] != Tile::Obstacle {
+            self.x = new_x;
+            self.y = new_y;
+            return false;
+        }
+    
+        let directions = [(0, -1), (0, 1), (-1, 0), (1, 0)];
+        let mut rng = rand::thread_rng();
+    
+        for _ in 0..4 {
+            let (dx, dy) = directions[rng.gen_range(0..4)];
+            let nx = (self.x as isize + dx).max(0).min((map.width - 1) as isize) as usize;
+            let ny = (self.y as isize + dy).max(0).min((map.height - 1) as isize) as usize;
+    
+            if map.grid[ny][nx] != Tile::Obstacle {
+                self.x = nx;
+                self.y = ny;
+                break;
+            }
+        }
+    
+        false
+    }    
 
     fn find_nearest(&self, map: &Map, target: Tile) -> Option<(usize, usize)> {
         let mut nearest = None;
@@ -63,8 +100,13 @@ impl Robot {
         nearest
     }
 
-    pub fn move_robot(&mut self, map: &Map, rng: &mut StdRng) {
+    pub fn move_robot(&mut self, map: &Map, rng: &mut StdRng, station_x: usize, station_y: usize) {
         if self.energy == 0 {
+            self.returning = true;
+        }
+
+        if self.returning {
+            self.returning = !self.return_to_station(station_x, station_y, map);
             return;
         }
     
@@ -125,27 +167,58 @@ impl Robot {
     }
 
     pub fn perform_action(&mut self, map: &mut Map) {
+        if self.returning {
+            return;
+        }
         match map.grid[self.y][self.x] {
             Tile::Energy => {
                 self.energy += 5;
                 self.discoveries.push((self.x, self.y, Tile::Energy));
-                map.grid[self.y][self.x] = Tile::Empty;
+                if map.grid[self.y][self.x] != Tile::Station {
+                    map.grid[self.y][self.x] = Tile::Empty;
+                }
             }
             Tile::Mineral if self.robot_type == RobotType::Miner => {
                 self.discoveries.push((self.x, self.y, Tile::Mineral));
-                map.grid[self.y][self.x] = Tile::Empty;
+                if map.grid[self.y][self.x] != Tile::Station {
+                    map.grid[self.y][self.x] = Tile::Empty;
+                }
             }
             Tile::Scientific if self.robot_type == RobotType::Scientist => {
                 self.discoveries.push((self.x, self.y, Tile::Scientific));
-                map.grid[self.y][self.x] = Tile::Empty;
+                if map.grid[self.y][self.x] != Tile::Station {
+                    map.grid[self.y][self.x] = Tile::Empty;
+                }
             }
-            tile if self.robot_type == RobotType::Explorer && tile != Tile::Empty && tile != Tile::Obstacle => {
+            tile if self.robot_type == RobotType::Explorer
+                && tile != Tile::Empty
+                && tile != Tile::Obstacle
+                && tile != Tile::Station => {
                 self.discoveries.push((self.x, self.y, tile));
-                map.grid[self.y][self.x] = Tile::Empty;
+                if map.grid[self.y][self.x] != Tile::Station {
+                    map.grid[self.y][self.x] = Tile::Empty;
+                }
             }
             _ => {}
         }
     }
+    
+    pub fn tick(
+        &mut self,
+        map: &mut Map,
+        station: &mut crate::station::Station,
+        rng: &mut StdRng,
+        station_x: usize,
+        station_y: usize,
+    ) {
+        self.move_robot(map, rng, station_x, station_y);
+        self.perform_action(map);
+        
+        if self.x == station_x && self.y == station_y && self.returning {
+            station.collect_discoveries(self); // ← puis on envoie à la station
+        }
+    }
+    
 }
 
 pub fn initialize_robots(count: usize, width: usize, height: usize, seed: u32) -> Vec<Robot> {
@@ -167,6 +240,7 @@ pub fn initialize_robots(count: usize, width: usize, height: usize, seed: u32) -
             robot_type,
             discoveries: Vec::new(),
             energy: 10,
+            returning: false,
         }
     }).collect()
 }
