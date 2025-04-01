@@ -36,7 +36,7 @@ impl Map {
             for x in 0..width {
                 let noise_value = perlin.get([x as f64 / 5.0, y as f64 / 5.0]);
 
-                if noise_value > 0.6 {
+                if noise_value > 0.2 {
                     grid[y][x] = Tile::Obstacle;
                 } else {
                     let resource_chance: f64 = rng.gen();
