@@ -7,24 +7,26 @@
 - [Approved](https://github.com/yamil-issa/robot-swarm/pull/1) 2025-03-18
 - [Approved](https://github.com/yamil-issa/robot-swarm/pull/2) 2025-03-18
 - [Approved](https://github.com/yamil-issa/robot-swarm/pull/3) 2025-03-18
+- [Approved](https://github.com/yamil-issa/robot-swarm/pull/4) 2025-03-31
+- [Approved](https://github.com/yamil-issa/robot-swarm/pull/4) 2025-03-31
+- [Approved](https://github.com/yamil-issa/robot-swarm/pull/4) 2025-03-31
 
-## Referenced Use Case(s)
-- [Use Case Name](URL)
 
 ## Context
 The project requires a structured approach to manage map generation, robots, and stations. Given the complexity of the simulation, decisions regarding architecture must be documented clearly. This ADR serves to justify and record architectural decisions made during development.
 
 ## Proposed Design
 ### Services/Modules Impacted
+- `main.rs`: Entry point of the program
 - `map.rs`: Handles map generation, including obstacles and resources
 - `robot.rs`: Handles robot creation, movement, and interaction
-- `main.rs`: Entry point of the program
+- `station.rs`: Handles resource collection, discovery tracking, and statistics reporting
 
 ### New Services/Modules Added
 - Dynamic ASCII rendering in `map.rs`
 - `robot.rs`: Manages robot logic and movement
 - use `Crossterm` to render the map in `map.rs`
-- `station.rs` (future module for the station management)
+- `station.rs`: Manages resource collection and discovery tracking
 
 ### Model and DTO Impact
 - Addition of `Tile` enum for different terrain types
@@ -35,41 +37,59 @@ The project requires a structured approach to manage map generation, robots, and
     - Scientist 🔬 (Analyzes scientific sites)
 - Addition of Robot struct:
     - Stores position (x, y)
-    - Holds id and robot_type
+    - Holds robot_type
+    - Tracks energy level and discoveries
     - Implements movement logic with collision avoidance
+    - Handles resource collection and station return
+- Addition of Station struct:
+    - Manages resource collection
+    - Tracks all discoveries
+    - Provides discovery statistics
 - Dynamic Map Representation:
     - Robots are displayed as E, M, S directly on the ASCII map
     - Map updates dynamically as robots move
-- Possible extension for handling resource collection
+    - Resources are displayed with colored symbols
+    - Station is displayed at a fixed position
 
 ### API Impact
 - No external API at this stage, only internal struct-based architecture
+- Thread-safe implementation using Arc<Mutex<T>> for shared resources
 
 ### General Configuration Impact
 - Map generation is based on a **Perlin Noise** function for obstacles
 - Uses a **random seed** to ensure reproducibility
 - Map size is configurable via CLI arguments `cargo run width height`
-- Number of robots is currently fixed at 3, but can be made configurable
-- Robots now move randomly, avoiding obstacles
+- Number of robots is fixed at 3 (one of each type)
+- Robots have energy management and return to station when low
 - Terminal clears each frame for real-time simulation
-- Frame update interval set to 500ms to ensure smooth animation
+- Frame update interval set to 400ms for smooth animation
+- Station is placed at the left center of the map
+- Resource generation probability is 3% per type per tile
 
 ### DevOps Impact
 - No significant impact at this stage, as the project is in early development
+- Dependencies managed through Cargo.toml:
+  - noise = "0.8" for Perlin Noise generation
+  - rand = "0.8" for random number generation
+  - crossterm = "0.26" for terminal rendering
 
 ## Considerations
 - Alternative approaches like cellular automata for terrain generation were considered but discarded in favor of Perlin Noise for smoother transitions.
-- Random resource placement was chosen with a 5% probability per resource type per tile.
-- Future work could implement pathfinding (A or Dijkstra)* for smarter movement.
-- Each robot moves one step at a time, but we may introduce different movement behaviors per robot type.
+- Resource placement uses a 3% probability per resource type per tile for balanced distribution.
+- Robots implement basic pathfinding towards resources and station.
+- Each robot type has specialized behavior:
+  - Explorers move randomly when energy is high
+  - Miners and Scientists actively seek their respective resources
+  - All robots return to station when energy is low
+- Thread-safe implementation ensures safe concurrent access to shared resources
 
 ## Decision
 - Use **Perlin Noise** for procedural map generation
 - Structure the project into **modular Rust files** (`map.rs`, `robot.rs`, `station.rs`)
-- Render the map in **ASCII format** for simplicity
+- Render the map in **ASCII format** with colored symbols
 - Add energy, mineral, and scientific resources to the map
 - Enable CLI-configurable map size
-- Introduce robot movement system with basic pathfinding rules
+- Implement robot movement system with energy management
 - Ensure robots cannot move into obstacles
 - Use a looped simulation with delays to animate movement
 - Store robots in a Vec<Robot> for tracking movements
@@ -77,7 +97,9 @@ The project requires a structured approach to manage map generation, robots, and
 - Clear terminal between frames to simulate fluid motion
 - Use Crossterm for rendering the map and robot movements in the terminal
 - Hide the cursor during simulation and restore it at the end
-- Ensure the last frame remains visible by repositioning the cursor correctly and enforcing a short delay before program exit
+- Implement thread-safe resource sharing using Arc<Mutex<T>>
+- Add station for resource collection and discovery tracking
+- Display final statistics at the end of simulation
 
 ## References
 - [Noise Crate](https://docs.rs/noise/latest/noise/) - Used for Perlin Noise generation
