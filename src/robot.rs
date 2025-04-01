@@ -215,7 +215,7 @@ impl Robot {
         self.perform_action(map);
         
         if self.x == station_x && self.y == station_y && self.returning {
-            station.collect_discoveries(self); // ← puis on envoie à la station
+            station.collect_discoveries(self); // ← then send to the station
         }
     }
     
