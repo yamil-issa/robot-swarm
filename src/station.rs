@@ -1,4 +1,4 @@
-use crate::robot::{Robot, RobotType};
+use crate::robot::Robot;
 use crate::map::Tile;
 use std::collections::HashSet;
 

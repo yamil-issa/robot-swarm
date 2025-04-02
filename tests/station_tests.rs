@@ -1,7 +1,7 @@
 use robot_swarm::station::Station;
-use robot_swarm::robot::{Robot, RobotType};
+use robot_swarm::robot::Robot;
 use robot_swarm::map::Tile;
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use rand::rngs::StdRng;
 
 #[test]

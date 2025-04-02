@@ -1,6 +1,6 @@
 use robot_swarm::robot::{Robot, RobotType};
 use robot_swarm::map::{Map, Tile};
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use rand::rngs::StdRng;
 
 #[test]

@@ -4,7 +4,7 @@ use rand::rngs::StdRng;
 use crossterm::{
     execute,
     terminal::{Clear, ClearType},
-    cursor::{MoveTo, Hide},
+    cursor::MoveTo,
     style::{Print, SetForegroundColor, Color},
 };
 use std::io::{stdout, Write};
