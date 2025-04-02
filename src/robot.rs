@@ -21,8 +21,8 @@ pub struct Robot {
 
 impl Robot {
     pub fn new(width: usize, height: usize, rng: &mut StdRng) -> Self {
-        let x = rng.gen_range(0..width);
-        let y = rng.gen_range(0..height);
+        let x = 0;
+        let y = 5;
 
         let robot_type = match rng.gen_range(0..3) {
             0 => RobotType::Explorer,
