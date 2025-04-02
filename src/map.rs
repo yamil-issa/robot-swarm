@@ -32,8 +32,14 @@ impl Map {
         let mut rng = StdRng::seed_from_u64(seed as u64);
         let mut grid = vec![vec![Tile::Empty; width]; height];
 
+        grid[5][0] = Tile::Station;
+
         for y in 0..height {
             for x in 0..width {
+                if x == 0 && y == 5 {
+                    continue;
+                }
+
                 let noise_value = perlin.get([x as f64 / 5.0, y as f64 / 5.0]);
 
                 if noise_value > 0.5 {

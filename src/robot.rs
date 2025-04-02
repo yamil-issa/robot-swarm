@@ -215,7 +215,7 @@ impl Robot {
         self.perform_action(map);
         
         if self.x == station_x && self.y == station_y && self.returning {
-            station.collect_discoveries(self); // ← then send to the station
+            station.collect_discoveries(self);
         }
     }
     
@@ -225,7 +225,7 @@ pub fn initialize_robots(count: usize, width: usize, height: usize, seed: u32) -
     let mut rng = StdRng::seed_from_u64(seed as u64);
     
     let start_x = 0;
-    let spacing = height / (count + 1);
+    let start_y = height / 2;
 
     (0..count).map(|i| {
         let robot_type = match rng.gen_range(0..3) {
@@ -236,7 +236,7 @@ pub fn initialize_robots(count: usize, width: usize, height: usize, seed: u32) -
 
         Robot {
             x: start_x,
-            y: spacing * (i + 1),
+            y: start_y,
             robot_type,
             discoveries: Vec::new(),
             energy: 10,
